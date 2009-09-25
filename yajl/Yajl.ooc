@@ -40,22 +40,22 @@ _free: func (ctx, ptr: Pointer) {
 }
 
 _nullCallback: func (ctx: Pointer) -> Int {
-    ctx as ArrayList<Value> add(Value<Pointer> new(null))
+    ctx as ArrayList<Value> add(Value<Pointer> new(Pointer, null))
     return -1
 }
 
 _booleanCallback: func (ctx: Pointer, value: Int) -> Int {
-    ctx as ArrayList<Value> add(Value<Bool> new(value ? true : false))
+    ctx as ArrayList<Value> add(Value<Bool> new(Bool, value ? true : false))
     return -1
 }
 
 _intCallback: func (ctx: Pointer, value: Long) -> Int {
-    ctx as ArrayList<Value> add(Value<Int> new(value))
+    ctx as ArrayList<Value> add(Value<Int> new(Int, value))
     return -1
 }
 
 _doubleCallback: func (ctx: Pointer, value: Double) -> Int {
-    ctx as ArrayList<Value> add(Value<Double> new(value))
+    ctx as ArrayList<Value> add(Value<Double> new(Double, value))
     return -1
 }
 
@@ -65,13 +65,12 @@ _stringCallback: func (ctx: Pointer, value: const UChar*, len: UInt) -> Int {
     s := gc_malloc(Char size * len + 1) as String
     memcpy(s, value, len)
     s[len] = 0
-    ctx as ArrayList<Value> add(Value<String> new(s))
+    ctx as ArrayList<Value> add(Value<String> new(String, s))
     return -1
 }
 
 _startMapCallback: func (ctx: Pointer) -> Int {
-    ctx as ArrayList<Value> add(Value<HashMap> new(HashMap<Value> new()))
-    Value<HashMap> new(HashMap<Value> new()) T name println()
+    ctx as ArrayList<Value> add(Value<HashMap> new(HashMap, HashMap<Value> new()))
     return -1
 }
 
@@ -79,26 +78,26 @@ _mapKeyCallback: func (ctx: Pointer, key: const UChar*, len: UInt) -> Int {
     s := gc_malloc(Char size * len + 1) as String
     memcpy(s, key, len)
     s[len] = 0
-    ctx as ArrayList<Value> add(Value<String> new(s))
+    ctx as ArrayList<Value> add(Value<String> new(String, s))
     return -1
 }
 
 _endMapCallback: func (ctx: Pointer) -> Int {
     arr := ctx as ArrayList<Value>
     i := arr size() - 1
-    "~~" println()
-    arr get(0) T name println()
     /* get the index of the last HashMap */
-    while(arr get(i) getType() != ValueType MAP) {
-       arr get(i) getType() toString() println()
+    while(1){
+        if(arr get(i) getType() == ValueType MAP) {
+            break;
+        }
         i -= 1
     }
     hashmap := arr get(i) value as HashMap
-    while(i > arr size()) {
-        arr size() toString() println()
+    i += 1
+    while(i < arr size()) {
         key := arr get(i) value as String
         hashmap put(key, arr get(i + 1))
-        arr remove(i) .remove(i + 1)
+        arr removeAt(i) .removeAt(i + 1)
     }
     return -1
 }
@@ -178,22 +177,23 @@ ValueType: class {
 
 Value: class <T> {
     value: T
+    type: Class
     
-    init: func (value: T) {
+    init: func (type: Class, value: T) {
         this value = value
+        this type = type
     }
 
     getType: func -> Int {
-        //return match value class {
-		return match T {
+        return match type {
+            case HashMap => ValueType MAP
+            case ArrayList => ValueType ARRAY
             case Pointer => ValueType NULL_
             case Bool => ValueType BOOLEAN
             case Int => ValueType INTEGER
             case Double => ValueType DOUBLE
             /* TODO: what about NUMBER? */
             case String => ValueType STRING
-            case HashMap => ValueType MAP
-            case ArrayList => ValueType ARRAY
         }
     }
 }
