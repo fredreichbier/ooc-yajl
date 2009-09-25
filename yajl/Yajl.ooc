@@ -184,7 +184,8 @@ Value: class <T> {
     }
 
     getType: func -> Int {
-        return match value class {
+        //return match value class {
+		return match T {
             case Pointer => ValueType NULL_
             case Bool => ValueType BOOLEAN
             case Int => ValueType INTEGER
