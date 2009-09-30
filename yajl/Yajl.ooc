@@ -97,7 +97,31 @@ _endMapCallback: func (ctx: Pointer) -> Int {
     while(i < arr size()) {
         key := arr get(i) value as String
         hashmap put(key, arr get(i + 1))
-        arr removeAt(i) .removeAt(i + 1)
+        arr removeAt(i) .removeAt(i)
+    }
+    return -1
+}
+
+_startArrayCallback: func (ctx: Pointer) -> Int {
+    ctx as ArrayList<Value> add(Value <ArrayList> new(ArrayList, ArrayList<Value> new()))
+    return -1
+}
+
+_endArrayCallback: func (ctx: Pointer) -> Int {
+    arr := ctx as ArrayList<Value>
+    i := arr size() - 1
+    /* get the index of the last ArrayList */
+    while(1){
+        if(arr get(i) getType() == ValueType ARRAY) {
+            break;
+        }
+        i -= 1
+    }
+    value := arr get(i) value as ArrayList<Value> 
+    i += 1
+    while(i < arr size()) {
+        value add(arr get(i))
+        arr removeAt(i)
     }
     return -1
 }
@@ -111,6 +135,8 @@ _callbacks string = _stringCallback
 _callbacks startMap = _startMapCallback
 _callbacks mapKey = _mapKeyCallback
 _callbacks endMap = _endMapCallback
+_callbacks startArray = _startArrayCallback
+_callbacks endArray = _endArrayCallback
 
 _config: ParserConfig
 _allocFuncs: AllocFuncs
