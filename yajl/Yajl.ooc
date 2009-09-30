@@ -16,6 +16,12 @@ Callbacks: cover from yajl_callbacks {
     endArray: extern(yajl_end_array) Func
 }
 
+ValueMap: class extends HashMap<Value> {
+    get: func ~typed (index: String, T: Class) -> T {
+        get(index) as Value value as T
+    }
+}
+
 Status: cover from Int
 
 ParserConfig: cover from yajl_parser_config {
@@ -70,7 +76,7 @@ _stringCallback: func (ctx: Pointer, value: const UChar*, len: UInt) -> Int {
 }
 
 _startMapCallback: func (ctx: Pointer) -> Int {
-    ctx as ArrayList<Value> add(Value<HashMap> new(HashMap, HashMap<Value> new()))
+    ctx as ArrayList<Value> add(Value<ValueMap> new(HashMap, ValueMap new()))
     return -1
 }
 
@@ -85,14 +91,14 @@ _mapKeyCallback: func (ctx: Pointer, key: const UChar*, len: UInt) -> Int {
 _endMapCallback: func (ctx: Pointer) -> Int {
     arr := ctx as ArrayList<Value>
     i := arr size() - 1
-    /* get the index of the last HashMap */
+    /* get the index of the last ValueMap */
     while(1){
         if(arr get(i) getType() == ValueType MAP) {
             break;
         }
         i -= 1
     }
-    hashmap := arr get(i) value as HashMap
+    hashmap := arr get(i) value as ValueMap
     i += 1
     while(i < arr size()) {
         key := arr get(i) value as String
@@ -212,7 +218,7 @@ Value: class <T> {
 
     getType: func -> Int {
         return match type {
-            case HashMap => ValueType MAP
+            case ValueMap => ValueType MAP
             case ArrayList => ValueType ARRAY
             case Pointer => ValueType NULL_
             case Bool => ValueType BOOLEAN
