@@ -17,8 +17,16 @@ Callbacks: cover from yajl_callbacks {
 }
 
 ValueMap: class extends HashMap<Value> {
-    get: func ~typed (index: String, T: Class) -> T {
-        get(index) as Value value as T
+	
+	new: static func -> This {
+		hm := HashMap<Value> new()
+		hm class = This
+		return hm as This
+	}
+	
+    get: func ~typed <T> (index: String, T: Class) -> T {
+		elem := get(index) as Value
+        return elem value as T
     }
 }
 
@@ -76,7 +84,7 @@ _stringCallback: func (ctx: Pointer, value: const UChar*, len: UInt) -> Int {
 }
 
 _startMapCallback: func (ctx: Pointer) -> Int {
-    ctx as ArrayList<Value> add(Value<ValueMap> new(HashMap, ValueMap new()))
+    ctx as ArrayList<Value> add(Value<ValueMap> new(ValueMap, ValueMap new()))
     return -1
 }
 
@@ -92,7 +100,7 @@ _endMapCallback: func (ctx: Pointer) -> Int {
     arr := ctx as ArrayList<Value>
     i := arr size() - 1
     /* get the index of the last ValueMap */
-    while(1){
+    while(i >= 0){
         if(arr get(i) getType() == ValueType MAP) {
             break;
         }
