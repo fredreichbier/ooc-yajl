@@ -18,10 +18,9 @@ Callbacks: cover from yajl_callbacks {
 
 ValueMap: class extends HashMap<Value> {
 	
-	new: static func -> This {
-		hm := HashMap<Value> new()
-		hm class = This
-		return hm as This
+	init: func ~valueMap {
+		T = Value
+		super()
 	}
 	
     get: func ~typed <T> (index: String, T: Class) -> T {
