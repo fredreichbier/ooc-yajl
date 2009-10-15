@@ -6,7 +6,7 @@ Callbacks: cover from yajl_callbacks {
     null_: extern(yajl_null) Func
     boolean: extern(yajl_boolean) Func
     integer: extern(yajl_integer) Func
-    double: extern(yajl_double) Func
+    double_: extern(yajl_double) Func
     number: extern(yajl_number) Func
     string: extern(yajl_string) Func
     startMap: extern(yajl_start_map) Func
@@ -143,7 +143,7 @@ _callbacks: Callbacks
 _callbacks null_ = _nullCallback
 _callbacks boolean = _booleanCallback
 _callbacks integer = _intCallback
-_callbacks double = _doubleCallback
+_callbacks double_ = _doubleCallback
 _callbacks string = _stringCallback
 _callbacks startMap = _startMapCallback
 _callbacks mapKey = _mapKeyCallback
