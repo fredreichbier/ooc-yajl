@@ -25,6 +25,7 @@ ValueMap: class extends HashMap<Value> {
 	
     get: func ~typed <T> (index: String, T: Class) -> T {
 		elem := get(index) as Value
+		printf("ValueMap: for index %s, getting value %p == %s\n", index, elem value, elem value as String)
         return elem value as T
     }
 }
