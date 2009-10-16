@@ -17,15 +17,15 @@ Callbacks: cover from yajl_callbacks {
 }
 
 ValueMap: class extends HashMap<Value> {
-	
-	init: func ~valueMap {
-		T = Value
-		super()
-	}
-	
+    
+    init: func ~valueMap {
+        T = Value
+        super()
+    }
+    
     get: func ~typed <T> (index: String, T: Class) -> T {
-		elem := get(index) as Value
-		printf("ValueMap: for index %s, getting value %p == %s\n", index, elem value, elem value as String)
+        elem := get(index) as Value
+        printf("ValueMap: for index %s, getting value %p == %s\n", index, elem value, elem value as String)
         return elem value as T
     }
 }
