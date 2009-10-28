@@ -1,4 +1,4 @@
-use yajl/yajl
+use yajl
 
 import structs/[ArrayList,HashMap]
 
