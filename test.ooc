@@ -7,7 +7,7 @@ main: func {
     map := parser getValue(ValueMap)
     map get("one", String) println()
     map get("two", String) println()
-    map get("fun", ArrayList<Value>) get(1) value as Int toString() println()
+    map get("fun", ArrayList<Value<Int>>) get(1) value as Int toString() println()
 }
 
 

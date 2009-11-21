@@ -26,7 +26,7 @@ ValueMap: class extends HashMap<Value<Pointer>> {
     get: func ~typed <T> (index: String, T: Class) -> T {
         // FIXME this workaround shouldn't be needed
         //elem := get(index) as Value
-        elem : Value = get(index)
+        elem : Value<T> = get(index)
         return elem value as T
     }
 }
@@ -118,7 +118,7 @@ _endMapCallback: func (ctx: Pointer) -> Int {
 }
 
 _startArrayCallback: func (ctx: Pointer) -> Int {
-    ctx as ArrayList<Value<ArrayList>> add(Value <ArrayList> new(ArrayList, ArrayList<Value<ArrayList>> new()))
+    ctx as ArrayList<Value<ArrayList<Value<Pointer>>>> add(Value <ArrayList<Value<Pointer>>> new(ArrayList<Value<Pointer>>, ArrayList<Value<ArrayList<Value<Pointer>>>> new()))
     return -1
 }
 
