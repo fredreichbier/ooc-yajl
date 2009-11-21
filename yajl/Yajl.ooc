@@ -77,7 +77,7 @@ _doubleCallback: func (ctx: Pointer, value: Double) -> Int {
 /* TODO: Number callback! */
 
 _stringCallback: func (ctx: Pointer, value: const UChar*, len: UInt) -> Int {
-    s := gc_malloc(Char size * len + 1) as String
+    s := String new(len)
     memcpy(s, value, len)
     s[len] = 0
     ctx as ArrayList<Value<String>> add(Value<String> new(String, s))
@@ -90,7 +90,7 @@ _startMapCallback: func (ctx: Pointer) -> Int {
 }
 
 _mapKeyCallback: func (ctx: Pointer, key: const UChar*, len: UInt) -> Int {
-    s := gc_malloc(Char size * len + 1) as String
+    s := String new(len)
     memcpy(s, key, len)
     s[len] = 0
     ctx as ArrayList<Value<String>> add(Value<String> new(String, s))
