@@ -17,13 +17,26 @@ Callbacks: cover from yajl_callbacks {
 }
 
 ValueMap: class extends HashMap<Value<Pointer>> {
-    
     init: func ~valueMap {
         T = Value
         super()
     }
     
     get: func ~typed <T> (index: String, T: Class) -> T {
+        // FIXME this workaround shouldn't be needed
+        //elem := get(index) as Value
+        elem : Value<T> = get(index)
+        return elem value as T
+    }
+}
+
+ValueList: class extends ArrayList<Value<Pointer>> {
+    init: func ~valueList {
+        T = Value
+        super()
+    }
+    
+    get: func ~typed <T> (index: Int, T: Class) -> T {
         // FIXME this workaround shouldn't be needed
         //elem := get(index) as Value
         elem : Value<T> = get(index)
@@ -55,22 +68,22 @@ _free: func (ctx, ptr: Pointer) {
 }
 
 _nullCallback: func (ctx: Pointer) -> Int {
-    ctx as ArrayList<Value<Pointer>> add(Value<Pointer> new(Pointer, null))
+    ctx as ValueList add(Value<Pointer> new(Pointer, null))
     return -1
 }
 
 _booleanCallback: func (ctx: Pointer, value: Int) -> Int {
-    ctx as ArrayList<Value<Bool>> add(Value<Bool> new(Bool, value ? true : false))
+    ctx as ValueList add(Value<Bool> new(Bool, value ? true : false))
     return -1
 }
 
 _intCallback: func (ctx: Pointer, value: Long) -> Int {
-    ctx as ArrayList<Value<Int>> add(Value<Int> new(Int, value))
+    ctx as ValueList add(Value<Int> new(Int, value))
     return -1
 }
 
 _doubleCallback: func (ctx: Pointer, value: Double) -> Int {
-    ctx as ArrayList<Value<Double>> add(Value<Double> new(Double, value))
+    ctx as ValueList add(Value<Double> new(Double, value))
     return -1
 }
 
@@ -80,12 +93,12 @@ _stringCallback: func (ctx: Pointer, value: const UChar*, len: UInt) -> Int {
     s := String new(len)
     memcpy(s, value, len)
     s[len] = 0
-    ctx as ArrayList<Value<String>> add(Value<String> new(String, s))
+    ctx as ValueList add(Value<String> new(String, s))
     return -1
 }
 
 _startMapCallback: func (ctx: Pointer) -> Int {
-    ctx as ArrayList<Value<ValueMap>> add(Value<ValueMap> new(ValueMap, ValueMap new()))
+    ctx as ValueList add(Value<ValueMap> new(ValueMap, ValueMap new()))
     return -1
 }
 
@@ -93,12 +106,12 @@ _mapKeyCallback: func (ctx: Pointer, key: const UChar*, len: UInt) -> Int {
     s := String new(len)
     memcpy(s, key, len)
     s[len] = 0
-    ctx as ArrayList<Value<String>> add(Value<String> new(String, s))
+    ctx as ValueList add(Value<String> new(String, s))
     return -1
 }
 
 _endMapCallback: func (ctx: Pointer) -> Int {
-    arr := ctx as ArrayList<Value<Pointer>>
+    arr := ctx as ValueList
     i := arr size() - 1
     /* get the index of the last ValueMap */
     while(i >= 0){
@@ -118,12 +131,12 @@ _endMapCallback: func (ctx: Pointer) -> Int {
 }
 
 _startArrayCallback: func (ctx: Pointer) -> Int {
-    ctx as ArrayList<Value<ArrayList<Value<Pointer>>>> add(Value <ArrayList<Value<Pointer>>> new(ArrayList<Value<Pointer>>, ArrayList<Value<ArrayList<Value<Pointer>>>> new()))
+    ctx as ValueList add(Value <ValueList> new(ValueList, ValueList new()))
     return -1
 }
 
 _endArrayCallback: func (ctx: Pointer) -> Int {
-    arr := ctx as ArrayList<Value<Pointer>>
+    arr := ctx as ValueList
     i := arr size() - 1
     /* get the index of the last ArrayList */
     while(1){
@@ -132,7 +145,7 @@ _endArrayCallback: func (ctx: Pointer) -> Int {
         }
         i -= 1
     }
-    value := arr get(i) value as ArrayList<Value<Pointer>> 
+    value := arr get(i) value as ValueList 
     i += 1
     while(i < arr size()) {
         value add(arr get(i))
@@ -171,10 +184,10 @@ Handle: cover from yajl_handle {
 
 SimpleParser: class {
     handle: Handle
-    stack: ArrayList<Value<Pointer>>
+    stack: ValueList
 
     init: func {
-        stack = ArrayList<Value<Pointer>> new()
+        stack = ValueList new()
         handle = Handle new(stack as Pointer)
     }
 
