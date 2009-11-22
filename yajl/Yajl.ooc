@@ -115,16 +115,17 @@ _endMapCallback: func (ctx: Pointer) -> Int {
     i := arr size() - 1
     /* get the index of the last ValueMap */
     while(i >= 0){
-        if(arr get(i) getType() == ValueType MAP) {
-            break;
+        value := arr as ArrayList<Value<Pointer>> get(i) as Value<Pointer>
+        if(value getType() == ValueType MAP) {
+            break
         }
         i -= 1
     }
-    hashmap := arr get(i) value as ValueMap
+    hashmap := arr as ArrayList<Value<Pointer>> get(i) as Value<Pointer> value as ValueMap
     i += 1
     while(i < arr size()) {
-        key := arr get(i) value as String
-        hashmap put(key, arr get(i + 1))
+        key := arr as ArrayList<Value<Pointer>> get(i) as Value<Pointer> value as String
+        hashmap put(key, arr as ArrayList<Value<Pointer>> get(i + 1) as Value<Pointer>)
         arr removeAt(i) .removeAt(i)
     }
     return -1
@@ -140,15 +141,16 @@ _endArrayCallback: func (ctx: Pointer) -> Int {
     i := arr size() - 1
     /* get the index of the last ArrayList */
     while(1){
-        if(arr get(i) getType() == ValueType ARRAY) {
-            break;
+        value := arr as ArrayList<Value<Pointer>> get(i) as Value<Pointer>
+        if(value getType() == ValueType ARRAY) {
+            break
         }
         i -= 1
     }
-    value := arr get(i) value as ValueList 
+    value := arr as ArrayList<Value<Pointer>> get(i) as Value<Pointer> value as ValueList 
     i += 1
     while(i < arr size()) {
-        value add(arr get(i))
+        value add(arr as ArrayList<Value<Pointer>> get(i) as Value<Pointer>)
         arr removeAt(i)
     }
     return -1
@@ -214,7 +216,8 @@ SimpleParser: class {
     }
 
     getValue: func <T> (T: Class) -> T {
-        return stack get(stack size() - 1) value
+        v := stack get(stack size() - 1) as Value<Pointer>
+        v value
     }
 }
 
@@ -241,7 +244,7 @@ Value: class <T> {
     getType: func -> Int {
         return match type {
             case ValueMap => ValueType MAP
-            case ArrayList => ValueType ARRAY
+            case ValueList => ValueType ARRAY
             case Pointer => ValueType NULL_
             case Bool => ValueType BOOLEAN
             case Int => ValueType INTEGER
