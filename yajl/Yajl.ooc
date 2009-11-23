@@ -106,20 +106,19 @@ _mapKeyCallback: func (ctx: Pointer, key: const UChar*, len: UInt) -> Int {
 
 _endMapCallback: func (ctx: Pointer) -> Int {
     arr := ctx as ValueList
-    i := arr size() - 1
+    i := arr lastIndex()
     /* get the index of the last ValueMap */
     while(i >= 0){
-        value := arr as ArrayList<Value<Pointer>> get(i) as Value<Pointer>
-        if(value getType() == ValueType MAP) {
+        if(arr get(i) getType() == ValueType MAP) {
             break
         }
         i -= 1
     }
-    hashmap := arr as ArrayList<Value<Pointer>> get(i) as Value<Pointer> value as ValueMap
+    hashmap := arr get(i) value as ValueMap
     i += 1
     while(i < arr size()) {
-        key := arr as ArrayList<Value<Pointer>> get(i) as Value<Pointer> value as String
-        hashmap put(key, arr as ArrayList<Value<Pointer>> get(i + 1) as Value<Pointer>)
+        key := arr get(i) value as String
+        hashmap put(key, arr get(i + 1))
         arr removeAt(i) .removeAt(i)
     }
     return -1
