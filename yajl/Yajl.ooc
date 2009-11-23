@@ -37,9 +37,7 @@ ValueList: class extends ArrayList<Value<Pointer>> {
     }
     
     get: func ~typed <T> (index: Int, T: Class) -> T {
-        // FIXME this workaround shouldn't be needed
-        //elem := get(index) as Value
-        elem : Value<T> = get(index)
+        elem := get(index) as Value<T>
         return elem value as T
     }
 }
