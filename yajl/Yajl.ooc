@@ -125,25 +125,25 @@ _endMapCallback: func (ctx: Pointer) -> Int {
 }
 
 _startArrayCallback: func (ctx: Pointer) -> Int {
-    ctx as ValueList add(Value <ValueList> new(ValueList, ValueList new()))
+    ctx as ValueList add(Value<ValueList> new(ValueList, ValueList new()))
     return -1
 }
 
 _endArrayCallback: func (ctx: Pointer) -> Int {
     arr := ctx as ValueList
-    i := arr size() - 1
+    i := arr lastIndex()
     /* get the index of the last ArrayList */
     while(1){
-        value := arr as ArrayList<Value<Pointer>> get(i) as Value<Pointer>
+        value := arr get(i) as Value<Pointer>
         if(value getType() == ValueType ARRAY) {
             break
         }
         i -= 1
     }
-    value := arr as ArrayList<Value<Pointer>> get(i) as Value<Pointer> value as ValueList 
+    value := arr get(i) value as ValueList 
     i += 1
     while(i < arr size()) {
-        value add(arr as ArrayList<Value<Pointer>> get(i) as Value<Pointer>)
+        value add(arr get(i))
         arr removeAt(i)
     }
     return -1
