@@ -134,7 +134,7 @@ _endArrayCallback: func (ctx: Pointer) -> Int {
     i := arr lastIndex()
     /* get the index of the last ArrayList */
     while(1){
-        value := arr get(i) as Value<Pointer>
+        value := arr get(i)
         if(value getType() == ValueType ARRAY) {
             break
         }
