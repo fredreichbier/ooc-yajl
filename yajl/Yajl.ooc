@@ -23,8 +23,7 @@ ValueMap: class extends HashMap<Value<Pointer>> {
     }
     
     get: func ~typed <T> (index: String, T: Class) -> T {
-        elem := get(index) as Value<T>
-        return elem value as T
+        get(index) value
     }
 }
 
@@ -35,8 +34,7 @@ ValueList: class extends ArrayList<Value<Pointer>> {
     }
     
     get: func ~typed <T> (index: Int, T: Class) -> T {
-        elem := get(index) as Value<T>
-        return elem value as T
+        get(index) value
     }
 }
 
