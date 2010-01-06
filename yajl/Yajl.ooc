@@ -1,6 +1,7 @@
 use yajl
 
 import structs/[ArrayList,HashMap]
+import text/StringBuffer
 
 Callbacks: cover from yajl_callbacks {
     null_: extern(yajl_null) Func
@@ -25,6 +26,10 @@ ValueMap: class extends HashMap<Value<Pointer>> {
     get: func ~typed <T> (index: String, T: Class) -> T {
         get(index) value
     }
+
+    getType: func (index: String) -> Class {
+        get(index) type
+    }
 }
 
 ValueList: class extends ArrayList<Value<Pointer>> {
@@ -35,6 +40,10 @@ ValueList: class extends ArrayList<Value<Pointer>> {
     
     get: func ~typed <T> (index: Int, T: Class) -> T {
         get(index) value
+    }
+    
+    getType: func (index: Int) -> Class {
+        get(index) type
     }
 }
 
@@ -177,6 +186,55 @@ Handle: cover from yajl_handle {
     }
 }
 
+GenConfig: cover from yajl_gen_config {
+    beautify: extern UInt
+    indentString: extern const String
+
+    new: static func (.beautify, .indentString) -> This {
+        genConfig: GenConfig
+        genConfig beautify = beautify
+        genConfig indentString = indentString
+        genConfig
+    }
+}
+
+GenStatus: cover from Int
+
+Gen: cover from yajl_gen {
+    new: static func (config: GenConfig@, allocFuncs: AllocFuncs@) -> This {
+        yajl_gen_alloc(config&, allocFuncs&)
+    }
+
+    new: static func ~lazy -> This {
+        yajl_gen_alloc(null, _allocFuncs&) /* Yeah, actually, we can pass NULL here, though it seems to be undocumented behaviour. */
+    }
+
+    new: static func ~withCallback (callback: Func, config: GenConfig@, allocFuncs: AllocFuncs@, ctx: Pointer) -> This {
+        yajl_gen_alloc2(callback, config&, allocFuncs&, ctx)
+    }
+
+    new: static func ~withCallbackLazy (callback: Func, ctx: Pointer) -> This {
+        yajl_gen_alloc2(callback, null, _allocFuncs&, ctx)
+    }
+
+    free: func {
+        yajl_gen_free(this)
+    }
+
+    genInteger: extern(yajl_gen_integer) func (number: Int) -> GenStatus
+    genDouble: extern(yajl_gen_double) func (number: Double) -> GenStatus
+    genNumber: extern(yajl_gen_number) func (num: const UChar*, len: UInt) -> GenStatus
+    genString: extern(yajl_gen_string) func (num: const UChar*, len: UInt) -> GenStatus
+    genNull: extern(yajl_gen_null) func -> GenStatus
+    genBool: extern(yajl_gen_bool) func (value: Bool) -> GenStatus
+    genMapOpen: extern(yajl_gen_map_open) func -> GenStatus
+    genMapClose: extern(yajl_gen_map_close) func -> GenStatus
+    genArrayOpen: extern(yajl_gen_array_open) func -> GenStatus
+    genArrayClose: extern(yajl_gen_array_close) func -> GenStatus
+    getBuf: extern(yajl_gen_get_buf) func (buf: const String*, len: UInt) -> GenStatus
+    clear: extern(yajl_gen_clear) func
+}
+
 SimpleParser: class {
     handle: Handle
     stack: ValueList
@@ -208,9 +266,12 @@ SimpleParser: class {
         /* TODO: clear `stack` */
     }
 
-    getValue: func <T> (T: Class) -> T {
-        v := stack get(stack size() - 1) as Value<Pointer>
-        v value
+    getValue: func -> Value<Pointer> {
+        stack get(stack size() - 1) as Value<Pointer>
+    }
+
+    getValue: func ~typed <T> (T: Class) -> T {
+        getValue() value as T
     }
 }
 
@@ -246,8 +307,65 @@ Value: class <T> {
             case String => ValueType STRING
         }
     }
+
+    _generate: func (gen: Gen) {
+        match type {
+            case ValueMap => {
+                gen genMapOpen()
+                for(key: String in value as ValueMap keys) {
+                    gen genString(key, key length())
+                    value as ValueMap get(key) _generate(gen)     
+                }
+                gen genMapClose()
+            }
+            case ValueList => {
+                gen genArrayOpen()
+                for(con: Value<Pointer> in value as ValueList) {
+                    con _generate(gen)
+                }
+                gen genArrayClose()
+            }
+            case Pointer => {
+                gen genNull()
+            }
+            case Bool => {
+                gen genBool(value as Bool)
+            }
+            case Int => {
+                gen genInteger(value as Int)
+            }
+            case Double => {
+                gen genDouble(value as Double)
+            }
+            case String => {
+                gen genString(value as String, (value as String) length())
+            }
+            /* TODO: what about NUMBER? */
+        }
+    }
+
+    generate: func ~withConfig (beautify: Bool, indent: String) -> String {
+        buf := StringBuffer new()
+        config := GenConfig new(beautify, indent)
+        gen := Gen new(func (buffer: StringBuffer, s: String, len: UInt) { buffer append(s, len) }, config&, _allocFuncs&, buf)
+        _generate(gen)
+        buf toString()
+    }
+
+    generate: func ~beautify (beautify: Bool) -> String {
+        generate(beautify, null)
+    }
+    
+    generate: func ~lazy -> String {
+        generate(false, null)
+    }
 }
 
+
 yajl_alloc: extern func (Callbacks*, ParserConfig*, AllocFuncs*, Pointer) -> Handle
+yajl_gen_alloc: extern func (GenConfig*, AllocFuncs*) -> Gen
+yajl_gen_alloc2: extern func (Func, GenConfig*, AllocFuncs*, Pointer) -> Gen
+yajl_gen_free: extern func (Gen)
 yajl_parse: extern func (Handle, UChar*, UInt) -> Status
 yajl_parse_complete: extern func (Handle) -> Status
+

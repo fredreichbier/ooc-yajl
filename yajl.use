@@ -3,5 +3,5 @@ Version: vcs
 Origin: git://github.com/fredreichbier/ooc-yajl.git 
 Description: Yet Another JSON Library 
 Libs: -lyajl
-Includes: yajl/yajl_parse.h
+Includes: yajl/yajl_parse.h, yajl/yajl_gen.h
 SourcePath: .

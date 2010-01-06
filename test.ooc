@@ -8,6 +8,7 @@ main: func {
     map get("one", String) println()
     map get("two", String) println()
     map get("fun", ArrayList<Value<Int>>) get(1) value as Int toString() println()
+    parser getValue() generate() println()
 }
 
 
