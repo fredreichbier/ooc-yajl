@@ -30,6 +30,11 @@ ValueMap: class extends HashMap<Value<Pointer>> {
     getType: func (index: String) -> Class {
         get(index) type
     }
+
+    putValue: func <T> ~typed (key: String, value: T) {
+        v := Value<T> new(T, value)
+        put(key, v as Value<Pointer>)
+    }
 }
 
 ValueList: class extends ArrayList<Value<Pointer>> {
@@ -44,6 +49,11 @@ ValueList: class extends ArrayList<Value<Pointer>> {
     
     getType: func (index: Int) -> Class {
         get(index) type
+    }
+
+    addValue: func <T> ~typed (value: T) {
+        v := Value<T> new(T, value)
+        add(v)
     }
 }
 
