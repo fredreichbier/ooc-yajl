@@ -1,6 +1,7 @@
 use yajl
 
 import structs/[ArrayList,HashMap]
+import io/Reader
 import text/StringBuffer
 
 Callbacks: cover from yajl_callbacks {
@@ -35,6 +36,10 @@ ValueMap: class extends HashMap<Value<Pointer>> {
         v := Value<T> new(T, value)
         put(key, v as Value<Pointer>)
     }
+
+    getValue: func <T> (index: String, T: Class) -> T {
+        get(index, T)
+    }
 }
 
 ValueList: class extends ArrayList<Value<Pointer>> {
@@ -54,6 +59,10 @@ ValueList: class extends ArrayList<Value<Pointer>> {
     addValue: func <T> ~typed (value: T) {
         v := Value<T> new(T, value)
         add(v)
+    }
+
+    getValue: func <T> (index: Int, T: Class) -> T {
+        get(index, T)
     }
 }
 
@@ -111,7 +120,7 @@ _stringCallback: func (ctx: Pointer, value: const UChar*, len: UInt) -> Int {
 }
 
 _startMapCallback: func (ctx: Pointer) -> Int {
-    ctx as ValueList add(Value<ValueMap> new(ValueMap, ValueMap new()))
+    ctx as ValueList add(Value<ValueMap> new(ValueMap, ValueMap new(), false))
     return -1
 }
 
@@ -126,14 +135,18 @@ _mapKeyCallback: func (ctx: Pointer, key: const UChar*, len: UInt) -> Int {
 _endMapCallback: func (ctx: Pointer) -> Int {
     arr := ctx as ValueList
     i := arr lastIndex()
-    /* get the index of the last ValueMap */
+    /* get the index of the last incomplete ValueMap.
+       Why incomplete? 
+       ValueMaps could also appear as values.
+     */
     while(i >= 0){
-        if(arr get(i) getType() == ValueType MAP) {
+        if(arr get(i) getType() == ValueType MAP && !arr get(i) complete) {
             break
         }
         i -= 1
     }
     hashmap := arr get(i) value as ValueMap
+    arr get(i) complete = true
     i += 1
     while(i < arr size()) {
         key := arr get(i) value as String
@@ -144,22 +157,23 @@ _endMapCallback: func (ctx: Pointer) -> Int {
 }
 
 _startArrayCallback: func (ctx: Pointer) -> Int {
-    ctx as ValueList add(Value<ValueList> new(ValueList, ValueList new()))
+    ctx as ValueList add(Value<ValueList> new(ValueList, ValueList new(), false))
     return -1
 }
 
 _endArrayCallback: func (ctx: Pointer) -> Int {
     arr := ctx as ValueList
     i := arr lastIndex()
-    /* get the index of the last ArrayList */
+    /* get the index of the last incomplete ArrayList */
     while(1){
         value := arr get(i)
-        if(value getType() == ValueType ARRAY) {
+        if(value getType() == ValueType ARRAY && !value complete) {
             break
         }
         i -= 1
     }
     value := arr get(i) value as ValueList 
+    arr get(i) complete = true
     i += 1
     while(i < arr size()) {
         value add(arr get(i))
@@ -271,6 +285,14 @@ SimpleParser: class {
         parseAll(text, text length())
     }
 
+    parseAll: func ~reader (reader: Reader) {
+        BUFFER_SIZE := const 30
+        chars := String new(BUFFER_SIZE)
+        while(reader hasNext()) {
+            parse(chars, reader read(chars, 0, BUFFER_SIZE))
+        }
+    }
+
     complete: func -> Status {
         yajl_parse_complete(handle)
         /* TODO: clear `stack` */
@@ -299,10 +321,11 @@ ValueType: class {
 Value: class <T> {
     value: T
     type: Class
-    
-    init: func (type: Class, value: T) {
-        this value = value
-        this type = type
+    complete: Bool
+
+    init: func (=type, =value, =complete) {}
+    init: func ~lazy (.type, .value) {
+        this(type, value, false)
     }
 
     getType: func -> Int {
