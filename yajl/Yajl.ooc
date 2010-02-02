@@ -42,6 +42,10 @@ ValueMap: class extends HashMap<Value<Pointer>> {
     }
 }
 
+operator [] <T> (this: ValueMap, key: String, T: Class) -> T {
+    this getValue(key, T)
+}
+
 ValueList: class extends ArrayList<Value<Pointer>> {
     init: func ~valueList {
         T = Value
@@ -64,6 +68,10 @@ ValueList: class extends ArrayList<Value<Pointer>> {
     getValue: func <T> (index: Int, T: Class) -> T {
         get(index, T)
     }
+}
+
+operator [] <T> (this: ValueList, index: Int, T: Class) -> T {
+    this getValue(index, T)
 }
 
 Status: cover from Int
