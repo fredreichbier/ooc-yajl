@@ -2,7 +2,7 @@ use yajl
 
 import structs/[ArrayList,HashMap]
 import io/Reader
-import text/StringBuffer
+import text/Buffer
 
 Callbacks: cover from yajl_callbacks {
     null_: extern(yajl_null) Func
@@ -386,9 +386,9 @@ Value: class <T> {
     }
 
     generate: func ~withConfig (beautify: Bool, indent: String) -> String {
-        buf := StringBuffer new()
+        buf := Buffer new()
         config := GenConfig new(beautify, indent)
-        gen := Gen new(func (buffer: StringBuffer, s: String, len: UInt) { buffer append(s, len) }, config&, _allocFuncs&, buf)
+        gen := Gen new(func (buffer: Buffer, s: String, len: UInt) { buffer append(s, len) }, config&, _allocFuncs&, buf)
         _generate(gen)
         buf toString()
     }
