@@ -18,7 +18,7 @@ Callbacks: cover from yajl_callbacks {
     endArray: extern(yajl_end_array) Func
 }
 
-ValueMap: class extends HashMap<Value<Pointer>> {
+ValueMap: class extends HashMap<String, Value<Pointer>> {
     init: func ~valueMap {
         T = Value
         super()
