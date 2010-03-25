@@ -49,8 +49,7 @@ operator [] <T> (this: ValueMap, key: String, T: Class) -> T {
 
 ValueList: class extends ArrayList<Value<Pointer>> {
     init: func ~valueList {
-        K = String
-        V = Value<Pointer>
+        T = String
         super()
     }
     
