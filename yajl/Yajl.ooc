@@ -20,7 +20,8 @@ Callbacks: cover from yajl_callbacks {
 
 ValueMap: class extends HashMap<String, Value<Pointer>> {
     init: func ~valueMap {
-        T = Value
+        K = String
+        V = Value<Pointer>
         super()
     }
     
@@ -48,7 +49,8 @@ operator [] <T> (this: ValueMap, key: String, T: Class) -> T {
 
 ValueList: class extends ArrayList<Value<Pointer>> {
     init: func ~valueList {
-        T = Value
+        K = String
+        V = Value<Pointer>
         super()
     }
     
