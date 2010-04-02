@@ -334,7 +334,7 @@ Value: class <T> {
 
     init: func (=type, =value, =complete) {}
     init: func ~lazy (.type, .value) {
-        this(type, value, false)
+        init(type, value, false)
     }
 
     getType: func -> Int {
