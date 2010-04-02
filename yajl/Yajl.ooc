@@ -18,6 +18,12 @@ Callbacks: cover from yajl_callbacks {
     endArray: extern(yajl_end_array) Func
 }
 
+JSONException: class extends Exception {
+    init: func ~withMsg (.msg) {
+        super(msg)
+    }
+}
+
 ValueMap: class extends HashMap<String, Value<Pointer>> {
     init: func ~valueMap {
         K = String
@@ -316,7 +322,12 @@ SimpleParser: class {
     }
 
     getValue: func ~typed <T> (T: Class) -> T {
-        getValue() value as T
+        container := getValue()
+        value := container value
+        if(!container type inheritsFrom(T)) {
+            JSONException new("%s expected, got %s" format(T name, container type name)) throw()
+        }
+        value as T
     }
 }
 

@@ -25,6 +25,8 @@ main: func {
     s := testGeneration()
     s println()
     JSON generate(testParsing(s)) println()
+    // Let's fail!
+    JSON parse("1", JSON ValueList)
 }
 
 
