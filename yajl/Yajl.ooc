@@ -32,7 +32,11 @@ ValueMap: class extends HashMap<String, Value<Pointer>> {
     }
     
     get: func ~typed <T> (index: String, T: Class) -> T {
-        get(index) value
+        container := get(index)
+        if(!container type inheritsFrom(T)) {
+            JSONException new("%s expected, got %s" format(T name, container type name)) throw()
+        }
+        container value
     }
 
     getType: func (index: String) -> Class {
@@ -77,7 +81,11 @@ ValueList: class extends ArrayList<Value<Pointer>> {
     }
 
     getValue: func <T> (index: Int, T: Class) -> T {
-        get(index, T)
+        container := get(index)
+        if(!container type inheritsFrom(T)) {
+            JSONException new("%s expected, got %s" format(T name, container type name)) throw()
+        }
+        container value
     }
 }
 
