@@ -47,6 +47,10 @@ operator [] <T> (this: ValueMap, key: String, T: Class) -> T {
     this getValue(key, T)
 }
 
+operator []= <T> (this: ValueMap, key: String, value: T) {
+    this putValue(key, value)
+}
+
 ValueList: class extends ArrayList<Value<Pointer>> {
     init: func ~valueList {
         T = String
@@ -334,7 +338,7 @@ Value: class <T> {
 
     init: func (=type, =value, =complete) {}
     init: func ~lazy (.type, .value) {
-        this(type, value, false)
+        init(type, value, false)
     }
 
     getType: func -> Int {
@@ -403,7 +407,6 @@ Value: class <T> {
     }
 }
 
-
 yajl_alloc: extern func (Callbacks*, ParserConfig*, AllocFuncs*, Pointer) -> Handle
 yajl_gen_alloc: extern func (GenConfig*, AllocFuncs*) -> Gen
 yajl_gen_alloc2: extern func (Func, GenConfig*, AllocFuncs*, Pointer) -> Gen
@@ -411,3 +414,10 @@ yajl_gen_free: extern func (Gen)
 yajl_parse: extern func (Handle, UChar*, UInt) -> Status
 yajl_parse_complete: extern func (Handle) -> Status
 
+generate: func <T> (v: T) -> String {
+    Value<T> new(T, v) generate()
+}
+
+parse: func <T> (s: String, T: Class) -> T {
+    SimpleParser new() parseAll(s) .getValue(T)
+}
