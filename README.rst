@@ -41,6 +41,8 @@ actual value, not the container ``Value``, make sure you use the ``getValue``
 and ``setValue`` methods or the special operators.
 All ``get*`` methods perform type checks.
 
+.. note:: Umm no, currently I have disabled the type checks. I have to think about that.
+
 ::
 
     map getValue("key", String)

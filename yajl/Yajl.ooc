@@ -33,9 +33,9 @@ ValueMap: class extends HashMap<String, Value<Pointer>> {
     
     get: func ~typed <T> (index: String, T: Class) -> T {
         container := get(index)
-        if(!container type inheritsFrom(T)) {
+/*        if(!container type inheritsFrom(T)) {
             JSONException new("%s expected, got %s" format(T name, container type name)) throw()
-        }
+        }*/
         container value
     }
 
@@ -43,7 +43,7 @@ ValueMap: class extends HashMap<String, Value<Pointer>> {
         get(index) type
     }
 
-    putValue: func <T> ~typed (key: String, value: T) {
+    putValue: func <T> (key: String, value: T) {
         v := Value<T> new(T, value)
         put(key, v as Value<Pointer>)
     }
@@ -75,16 +75,16 @@ ValueList: class extends ArrayList<Value<Pointer>> {
         get(index) type
     }
 
-    addValue: func <T> ~typed (value: T) {
+    addValue: func <T> (value: T) {
         v := Value<T> new(T, value)
         add(v)
     }
 
     getValue: func <T> (index: Int, T: Class) -> T {
         container := get(index)
-        if(!container type inheritsFrom(T)) {
+/*        if(!container type inheritsFrom(T)) {
             JSONException new("%s expected, got %s" format(T name, container type name)) throw()
-        }
+        }*/
         container value
     }
 }
