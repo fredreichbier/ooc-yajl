@@ -29,6 +29,7 @@ ValueMap: class extends HashMap<String, Value<Pointer>> {
         K = String
         V = Value<Pointer>
         super()
+        "KEYS: %p" format(keys) println()
     }
     
     get: func ~typed <T> (index: String, T: Class) -> T {
@@ -377,7 +378,7 @@ Value: class <T> {
         match type {
             case ValueMap => {
                 gen genMapOpen()
-                for(key: String in value as ValueMap keys) {
+                for(key: String in value as ValueMap getKeys()) {
                     gen genString(key, key length())
                     value as ValueMap get(key) _generate(gen)     
                 }
@@ -411,7 +412,7 @@ Value: class <T> {
 
     generate: func ~withConfig (beautify: Bool, indent: String) -> String {
         buf := Buffer new()
-        config := GenConfig new(beautify, indent)
+        config := GenConfig new(beautify as UInt, indent)
         gen := Gen new(func (buffer: Buffer, s: String, len: UInt) { buffer append(s, len) }, config&, _allocFuncs&, buf)
         _generate(gen)
         buf toString()

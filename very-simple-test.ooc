@@ -24,9 +24,7 @@ testParsing: func (s: String) -> ValueMap {
 main: func {
     s := testGeneration()
     s println()
-    generate(testParsing(s)) println()
-    // Let's fail!
-    parse("1", ValueList)
+    "%p" format(testParsing(s)) println()
 }
 
 
