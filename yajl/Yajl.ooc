@@ -29,7 +29,6 @@ ValueMap: class extends HashMap<String, Value<Pointer>> {
         K = String
         V = Value<Pointer>
         super()
-        "KEYS: %p" format(keys) println()
     }
     
     get: func ~typed <T> (index: String, T: Class) -> T {
@@ -336,7 +335,7 @@ SimpleParser: class {
         if(!container type inheritsFrom(T)) {
             JSONException new("%s expected, got %s" format(T name, container type name)) throw()
         }
-        value as T
+        value
     }
 }
 
