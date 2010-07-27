@@ -5,17 +5,17 @@ import io/Reader
 import text/Buffer
 
 Callbacks: cover from yajl_callbacks {
-    null_: extern(yajl_null) Func
-    boolean: extern(yajl_boolean) Func
-    integer: extern(yajl_integer) Func
-    double_: extern(yajl_double) Func
-    number: extern(yajl_number) Func
-    string: extern(yajl_string) Func
-    startMap: extern(yajl_start_map) Func
-    mapKey: extern(yajl_map_key) Func
-    endMap: extern(yajl_end_map) Func
-    startArray: extern(yajl_start_array) Func
-    endArray: extern(yajl_end_array) Func
+    null_: extern(yajl_null) Pointer
+    boolean: extern(yajl_boolean) Pointer
+    integer: extern(yajl_integer) Pointer
+    double_: extern(yajl_double) Pointer
+    number: extern(yajl_number) Pointer
+    string: extern(yajl_string) Pointer
+    startMap: extern(yajl_start_map) Pointer
+    mapKey: extern(yajl_map_key) Pointer
+    endMap: extern(yajl_end_map) Pointer
+    startArray: extern(yajl_start_array) Pointer
+    endArray: extern(yajl_end_array) Pointer
 }
 
 JSONException: class extends Exception {
@@ -30,10 +30,10 @@ ValueMap: class extends HashMap<String, Value<Pointer>> {
         V = Value<Pointer>
         super()
     }
-    
+
     get: func ~typed <T> (index: String, T: Class) -> T {
         container := get(index)
-/*        if(!container type inheritsFrom(T)) {
+/*        if(!container type inheritsFrom?(T)) {
             JSONException new("%s expected, got %s" format(T name, container type name)) throw()
         }*/
         container value
@@ -66,11 +66,11 @@ ValueList: class extends ArrayList<Value<Pointer>> {
         T = String
         super()
     }
-    
+
     get: func ~typed <T> (index: Int, T: Class) -> T {
         get(index) value
     }
-    
+
     getType: func (index: Int) -> Class {
         get(index) type
     }
@@ -82,7 +82,7 @@ ValueList: class extends ArrayList<Value<Pointer>> {
 
     getValue: func <T> (index: Int, T: Class) -> T {
         container := get(index)
-/*        if(!container type inheritsFrom(T)) {
+/*        if(!container type inheritsFrom?(T)) {
             JSONException new("%s expected, got %s" format(T name, container type name)) throw()
         }*/
         container value
@@ -100,7 +100,7 @@ ParserConfig: cover from yajl_parser_config {
 }
 
 AllocFuncs: cover from yajl_alloc_funcs {
-    malloc, realloc, free: extern Func
+    malloc, realloc, free: extern Pointer
     ctx: extern Pointer
 }
 
@@ -163,7 +163,7 @@ _endMapCallback: func (ctx: Pointer) -> Int {
     arr := ctx as ValueList
     i := arr lastIndex()
     /* get the index of the last incomplete ValueMap.
-       Why incomplete? 
+       Why incomplete?
        ValueMaps could also appear as values.
      */
     while(i >= 0){
@@ -199,7 +199,7 @@ _endArrayCallback: func (ctx: Pointer) -> Int {
         }
         i -= 1
     }
-    value := arr get(i) value as ValueList 
+    value := arr get(i) value as ValueList
     arr get(i) complete = true
     i += 1
     while(i < arr size()) {
@@ -261,11 +261,17 @@ Gen: cover from yajl_gen {
     }
 
     new: static func ~withCallback (callback: Func, config: GenConfig@, allocFuncs: AllocFuncs@, ctx: Pointer) -> This {
-        yajl_gen_alloc2(callback, config&, allocFuncs&, ctx)
+        // FIXME: if 'callback' is a real closure, we miss the context and bad things happen.
+        // this is a design problem in ooc-yajl imho, but I'm not sur how to fix it since
+        // where it's used it also takes additionnal arguments :/
+        yajl_gen_alloc2(callback as Closure thunk, config&, allocFuncs&, ctx)
     }
 
     new: static func ~withCallbackLazy (callback: Func, ctx: Pointer) -> This {
-        yajl_gen_alloc2(callback, null, _allocFuncs&, ctx)
+        // FIXME: if 'callback' is a real closure, we miss the context and bad things happen.
+        // this is a design problem in ooc-yajl imho, but I'm not sur how to fix it since
+        // where it's used it also takes additionnal arguments :/
+        yajl_gen_alloc2(callback as Closure thunk, null, _allocFuncs&, ctx)
     }
 
     free: func {
@@ -315,7 +321,7 @@ SimpleParser: class {
     parseAll: func ~reader (reader: Reader) {
         BUFFER_SIZE := const 30
         chars := String new(BUFFER_SIZE)
-        while(reader hasNext()) {
+        while(reader hasNext?()) {
             parse(chars, reader read(chars, 0, BUFFER_SIZE))
         }
     }
@@ -330,12 +336,11 @@ SimpleParser: class {
     }
 
     getValue: func ~typed <T> (T: Class) -> T {
-        container := getValue()
-        value := container value
-        if(!container type inheritsFrom(T)) {
+        container := stack get(stack size() - 1)
+        if(!container type inheritsFrom?(T)) {
             JSONException new("%s expected, got %s" format(T name, container type name)) throw()
         }
-        value
+        container value as T
     }
 }
 
@@ -379,7 +384,7 @@ Value: class <T> {
                 gen genMapOpen()
                 for(key: String in value as ValueMap getKeys()) {
                     gen genString(key, key length())
-                    value as ValueMap get(key) _generate(gen)     
+                    value as ValueMap get(key) _generate(gen)
                 }
                 gen genMapClose()
             }
@@ -420,7 +425,7 @@ Value: class <T> {
     generate: func ~beautify (beautify: Bool) -> String {
         generate(beautify, null)
     }
-    
+
     generate: func ~lazy -> String {
         generate(false, null)
     }
@@ -428,7 +433,7 @@ Value: class <T> {
 
 yajl_alloc: extern func (Callbacks*, ParserConfig*, AllocFuncs*, Pointer) -> Handle
 yajl_gen_alloc: extern func (GenConfig*, AllocFuncs*) -> Gen
-yajl_gen_alloc2: extern func (Func, GenConfig*, AllocFuncs*, Pointer) -> Gen
+yajl_gen_alloc2: extern func (Pointer, GenConfig*, AllocFuncs*, Pointer) -> Gen
 yajl_gen_free: extern func (Gen)
 yajl_parse: extern func (Handle, UChar*, UInt) -> Status
 yajl_parse_complete: extern func (Handle) -> Status
